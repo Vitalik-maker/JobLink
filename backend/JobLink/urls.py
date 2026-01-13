@@ -1,19 +1,24 @@
 # api/urls.py
 from django.urls import path
 from .views import (
-    RegisterView, LoginView, DashboardView,
-    JobApplicationsView, JobApplicationDetailView,
-    SkillsView, SkillDetailView, ProfileView, AISuggestionsView,
+    RegisterAPIView, LoginAPIView, DashboardAPIView,
+    JobApplicationsViewSet, JobApplicationDetailView,
+    SkillViewSet, SkillDetailView, UserProfileViewSet, AISuggestionsView,
 )
 
+from rest_framework.routers import DefaultRouter
+
+router = DefaultRouter()
+router.register(r'applications', JobApplicationsViewSet)
+router.register(r'skills', SkillViewSet) 
+router.register(r'profile', UserProfileViewSet)
+
 urlpatterns = [
-    path('auth/register/', RegisterView.as_view()),
-    path('auth/login/',    LoginView.as_view()),
-    path('dashboard/',     DashboardView.as_view()),
-    path('profile/',       ProfileView.as_view()),
-    path('applications/',  JobApplicationsView.as_view()),
-    path('applications/<int:pk>/', JobApplicationDetailView.as_view()),
-    path('skills/',        SkillsView.as_view()),
-    path('skills/<int:pk>/', SkillDetailView.as_view()),
-    path('ai/suggestions/', AISuggestionsView.as_view()),
-]
+    # Custom endpoints
+    path('auth/login/', LoginAPIView.as_view()),
+    path('auth/register/', RegisterAPIView.as_view()),
+    path('dashboard/', DashboardAPIView.as_view()),
+    #path('ai/suggestions/', AISuggestionsAPIView.as_view()),
+    
+] + router.urls
+

@@ -1,7 +1,7 @@
 # api/views.py
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, viewsets
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate, get_user_model
@@ -17,8 +17,35 @@ import random
 
 User = get_user_model()
 
+class JobApplicationsViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    serializer_class = JobApplicationSerializer
 
-class RegisterView(APIView):
+    def get_queryset(self):
+        return JobApplication.objects.filter(user = self.request.user)
+    
+class SkillViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    serializer_class = SkillSerializer
+
+    def get_queryset(self):
+        return Skill.objects.filter(user = self.request.user)
+    
+class UserProfileViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = [AllowAny]
+    serializer_class = UserSerializer
+
+    def get_queryset(self):
+        return User.objects.filter(id = self.request.user.id)
+
+#class AccomplishmentsViewSet(viewsets.ModelViewSet):
+#    permission_classes = [IsAuthenticated]
+#    serializer_class = AccomplishmentsSerializer
+#
+#    def get_queryset(self):
+#        return Acomplishments.objects.filter(user = self.request.user)
+
+class RegisterAPIView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -37,6 +64,7 @@ class RegisterView(APIView):
         data = request.data.copy()
         if "password" not in data or not data["password"]:
             return Response({"detail": "Password is required."}, status=400)
+        
         serializer = UserSerializer(data=data)
         if serializer.is_valid():
             user = User.objects.create_user(
@@ -55,7 +83,7 @@ class RegisterView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class LoginView(APIView):
+class LoginAPIView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -81,7 +109,7 @@ class LoginView(APIView):
         return Response({"token": token.key, "user": UserSerializer(user).data})
 
 
-class DashboardView(APIView):
+class DashboardAPIView(APIView):
     """
     Returns all data for the React JobLink dashboard:
     - job applications (left big column)
@@ -121,148 +149,149 @@ class DashboardView(APIView):
         return Response(dash.data)
 
 
-class JobApplicationsView(APIView):
-    """
-    CRUD for JobApplication list.
-    Used to fill the left blue 'Job Applications' card.
-    """
-
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        apps = JobApplication.objects.filter(user=request.user).order_by("-applied_date")
-        ser = JobApplicationSerializer(apps, many=True)
-        return Response(ser.data)
-
-    def post(self, request):
-        data = request.data.copy()
-        data["user"] = request.user.id
-        ser = JobApplicationSerializer(data=data)
-        if ser.is_valid():
-            ser.save()
-            return Response(ser.data, status=201)
-        return Response(ser.errors, status=400)
-
-
-class JobApplicationDetailView(APIView):
-    """
-    Update / delete a single job application.
-    """
-
-    permission_classes = [IsAuthenticated]
-
-    def get_object(self, user, pk):
-        try:
-            return JobApplication.objects.get(pk=pk, user=user)
-        except JobApplication.DoesNotExist:
-            return None
-
-    def put(self, request, pk):
-        app = self.get_object(request.user, pk)
-        if not app:
-            return Response({"detail": "Not found."}, status=404)
-        ser = JobApplicationSerializer(app, data=request.data, partial=True)
-        if ser.is_valid():
-            ser.save()
-            return Response(ser.data)
-        return Response(ser.errors, status=400)
-
-    def delete(self, request, pk):
-        app = self.get_object(request.user, pk)
-        if not app:
-            return Response({"detail": "Not found."}, status=404)
-        app.delete()
-        return Response(status=204)
-
-
-class SkillsView(APIView):
-    """
-    CRUD for Skill items.
-    Populates the 'List of skills' blue card.
-    """
-
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        skills = Skill.objects.filter(user=request.user).order_by("id")
-        ser = SkillSerializer(skills, many=True)
-        return Response(ser.data)
-
-    def post(self, request):
-        data = request.data.copy()
-        data["user"] = request.user.id
-        ser = SkillSerializer(data=data)
-        if ser.is_valid():
-            ser.save()
-            return Response(ser.data, status=201)
-        return Response(ser.errors, status=400)
-
-
-class SkillDetailView(APIView):
-    """
-    Update / delete a single skill.
-    """
-
-    permission_classes = [IsAuthenticated]
-
-    def get_object(self, user, pk):
-        try:
-            return Skill.objects.get(pk=pk, user=user)
-        except Skill.DoesNotExist:
-            return None
-
-    def put(self, request, pk):
-        skill = self.get_object(request.user, pk)
-        if not skill:
-            return Response({"detail": "Not found."}, status=404)
-        ser = SkillSerializer(skill, data=request.data, partial=True)
-        if ser.is_valid():
-            ser.save()
-            return Response(ser.data)
-        return Response(ser.errors, status=400)
-
-    def delete(self, request, pk):
-        skill = self.get_object(request.user, pk)
-        if not skill:
-            return Response({"detail": "Not found."}, status=404)
-        skill.delete()
-        return Response(status=204)
-
-
-class ProfileView(APIView):
-    """
-    Used on the profile-style dashboard (picture, name, age, skills).
-    """
-
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        return Response(UserSerializer(request.user).data)
-
-    def put(self, request):
-        user = request.user
-        ser = UserSerializer(user, data=request.data, partial=True)
-        if ser.is_valid():
-            ser.save()
-            return Response(ser.data)
-        return Response(ser.errors, status=400)
-
-
-class AISuggestionsView(APIView):
-    """
-    Placeholder endpoint for future AI.
-    Right now it just returns canned suggestions.
-    """
-
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        base_suggestions = [
-            "Try adding a short 2–3 line summary at the top of your resume.",
-            "List 3–5 key skills that match your target roles.",
-            "Add metrics (%, $, time saved) to at least two accomplishments.",
-            "Link to a portfolio or GitHub if you have projects.",
-            "Ask JobLink AI to generate tailored bullet points per job.",
-        ]
-        random.shuffle(base_suggestions)
-        return Response({"suggestions": base_suggestions[:4]})
+#class JobApplicationsView(APIView):
+#    """
+#    CRUD for JobApplication list.
+#    Used to fill the left blue 'Job Applications' card.
+#    """
+#
+#    permission_classes = [IsAuthenticated]
+#
+#    def get(self, request):
+#        apps = JobApplication.objects.filter(user=request.user).order_by("-applied_date")
+#        ser = JobApplicationSerializer(apps, many=True)
+#        return Response(ser.data)
+#
+#    def post(self, request):
+#        data = request.data.copy()
+#        data["user"] = request.user.id
+#        ser = JobApplicationSerializer(data=data)
+#        if ser.is_valid():
+#            ser.save()
+#            return Response(ser.data, status=201)
+#        return Response(ser.errors, status=400)
+#
+#
+#class JobApplicationDetailView(APIView):
+#    """
+#    Update / delete a single job application.
+#    """
+#
+#    permission_classes = [IsAuthenticated]
+#
+#    def get_object(self, user, pk):
+#        try:
+#            return JobApplication.objects.get(pk=pk, user=user)
+#        except JobApplication.DoesNotExist:
+#            return None
+#
+#    def put(self, request, pk):
+#        app = self.get_object(request.user, pk)
+#        if not app:
+#            return Response({"detail": "Not found."}, status=404)
+#        ser = JobApplicationSerializer(app, data=request.data, partial=True)
+#        if ser.is_valid():
+#            ser.save()
+#            return Response(ser.data)
+#        return Response(ser.errors, status=400)
+#
+#    def delete(self, request, pk):
+#        app = self.get_object(request.user, pk)
+#        if not app:
+#            return Response({"detail": "Not found."}, status=404)
+#        app.delete()
+#        return Response(status=204)
+#
+#
+#class SkillsView(APIView):
+#    """
+#    CRUD for Skill items.
+#    Populates the 'List of skills' blue card.
+#    """
+#
+#    permission_classes = [IsAuthenticated]
+#
+#    def get(self, request):
+#        skills = Skill.objects.filter(user=request.user).order_by("id")
+#        ser = SkillSerializer(skills, many=True)
+#        return Response(ser.data)
+#
+#    def post(self, request):
+#        data = request.data.copy()
+#        data["user"] = request.user.id
+#        ser = SkillSerializer(data=data)
+#        if ser.is_valid():
+#            ser.save()
+#            return Response(ser.data, status=201)
+#        return Response(ser.errors, status=400)
+#
+#
+#class SkillDetailView(APIView):
+#    """
+#    Update / delete a single skill.
+#    """
+#
+#    permission_classes = [IsAuthenticated]
+#
+#    def get_object(self, user, pk):
+#        try:
+#            return Skill.objects.get(pk=pk, user=user)
+#        except Skill.DoesNotExist:
+#            return None
+#
+#    def put(self, request, pk):
+#        skill = self.get_object(request.user, pk)
+#        if not skill:
+#            return Response({"detail": "Not found."}, status=404)
+#        ser = SkillSerializer(skill, data=request.data, partial=True)
+#        if ser.is_valid():
+#            ser.save()
+#            return Response(ser.data)
+#        return Response(ser.errors, status=400)
+#
+#    def delete(self, request, pk):
+#        skill = self.get_object(request.user, pk)
+#        if not skill:
+#            return Response({"detail": "Not found."}, status=404)
+#        skill.delete()
+#        return Response(status=204)
+#
+#
+#class ProfileView(APIView):
+#    """
+#    Used on the profile-style dashboard (picture, name, age, skills).
+#    """
+#
+#    permission_classes = [IsAuthenticated]
+#
+#    def get(self, request):
+#        return Response(UserSerializer(request.user).data)
+#
+#    def put(self, request):
+#        user = request.user
+#        ser = UserSerializer(user, data=request.data, partial=True)
+#        if ser.is_valid():
+#            ser.save()
+#            return Response(ser.data)
+#        return Response(ser.errors, status=400)
+#
+#
+#class AISuggestionsView(APIView):
+#    """
+#    Placeholder endpoint for future AI.
+#    Right now it just returns canned suggestions.
+#    """
+#
+#    permission_classes = [IsAuthenticated]
+#
+#    def get(self, request):
+#        base_suggestions = [
+#            "Try adding a short 2–3 line summary at the top of your resume.",
+#            "List 3–5 key skills that match your target roles.",
+#            "Add metrics (%, $, time saved) to at least two accomplishments.",
+#            "Link to a portfolio or GitHub if you have projects.",
+#            "Ask JobLink AI to generate tailored bullet points per job.",
+#        ]
+#        random.shuffle(base_suggestions)
+#        return Response({"suggestions": base_suggestions[:4]})
+#

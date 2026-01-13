@@ -1,5 +1,5 @@
 from django.apps import AppConfig
 
 
-class GreenquestConfig(AppConfig):
-    name = 'GreenQuest'
+class JobLinkConfig(AppConfig):
+    name = 'JobLink'
