@@ -6,6 +6,19 @@ class User(AbstractUser):
     skills = models.JSONField(default=list)
     accomplishments = models.JSONField(default=list)
     age = models.IntegerField(null=True, blank=True)
+    
+    # ← ADD THESE TWO LINES
+    groups = models.ManyToManyField(
+        'auth.Group',
+        related_name='joblink_user_set',
+        blank=True,
+    )
+    user_permissions = models.ManyToManyField(
+        'auth.Permission',
+        related_name='joblink_user_permissions',
+        blank=True,
+    )
+
 
 class JobApplication(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)

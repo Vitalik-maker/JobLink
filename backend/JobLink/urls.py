@@ -2,8 +2,8 @@
 from django.urls import path
 from .views import (
     RegisterAPIView, LoginAPIView, DashboardAPIView,
-    JobApplicationsViewSet, JobApplicationDetailView,
-    SkillViewSet, SkillDetailView, UserProfileViewSet, AISuggestionsView,
+    JobApplicationsViewSet, #JobApplicationDetailView,
+    SkillViewSet, UserProfileViewSet, #SkillDetailView,  AISuggestionsView,
 )
 
 from rest_framework.routers import DefaultRouter
