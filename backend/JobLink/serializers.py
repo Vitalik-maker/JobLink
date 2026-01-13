@@ -1,0 +1,56 @@
+# api/serializers.py (complete)
+from rest_framework import serializers
+from django.contrib.auth import get_user_model
+from .models import User, JobApplication, Skill
+
+User = get_user_model()
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 
+                 'profile_picture', 'skills', 'accomplishments', 'age']
+        extra_kwargs = {
+            'password': {'write_only': True}
+        }
+
+    def create(self, validated_data):
+        user = User.objects.create_user(
+            username=validated_data['username'],
+            email=validated_data.get('email', ''),
+            password=validated_data['password'],
+            first_name=validated_data.get('first_name', ''),
+            last_name=validated_data.get('last_name', ''),
+            age=validated_data.get('age'),
+            skills=validated_data.get('skills', []),
+            accomplishments=validated_data.get('accomplishments', [])
+        )
+        return user
+
+class LoginSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    password = serializers.CharField()
+
+class JobApplicationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = JobApplication
+        fields = '__all__'
+
+class SkillSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Skill
+        fields = '__all__'
+
+class DashboardSerializer(serializers.Serializer):
+    applications = JobApplicationSerializer(many=True)
+    skills = SkillSerializer(many=True)
+    user = UserSerializer()
+    ai_suggestions = serializers.ListField(child=serializers.CharField())
+
+class ProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = '__all__'
+        extra_kwargs = {
+            'password': {'write_only': True}
+        }

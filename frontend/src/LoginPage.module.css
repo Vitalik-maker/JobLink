@@ -1,0 +1,296 @@
+.page {
+  min-height: 100vh;
+  background: radial-gradient(circle at top left, #ffb347 0, #fff 50%);
+  display: flex;
+  flex-direction: column;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.bgGradient {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 0 0, rgba(255, 235, 59, 0.35), transparent 60%),
+              radial-gradient(circle at 100% 100%, rgba(0, 188, 212, 0.32), transparent 55%);
+  z-index: -1;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 40px;
+}
+
+.brandBubble {
+  background: #ffca28;
+  color: #000;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  padding: 10px 22px;
+  border-radius: 999px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.nav {
+  display: flex;
+  gap: 18px;
+}
+
+.navLink,
+.navLinkActive {
+  text-decoration: none;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 999px;
+  transition: background 0.2s, color 0.2s;
+}
+
+.navLink {
+  color: #555;
+}
+
+.navLinkActive {
+  background: #ff4081;
+  color: white;
+}
+
+.main {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  padding: 20px 40px 40px;
+  gap: 32px;
+}
+
+/* Left column (mock dashboard) */
+.previewColumn {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 22px;
+  align-items: stretch;
+}
+
+.cardBlueTall {
+  background: #039be5;
+  border-radius: 40px;
+  border: 8px solid #ffca28;
+  padding: 26px 28px;
+  color: white;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
+  display: flex;
+  flex-direction: column;
+}
+
+.cardBlueTitle {
+  font-size: 24px;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.previewJobs {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  font-size: 18px;
+}
+
+.previewJobItem {
+  display: flex;
+  justify-content: space-between;
+  padding: 2px 4px;
+}
+
+.previewJobLabel {
+  font-weight: 600;
+}
+
+.previewDots {
+  opacity: 0.6;
+}
+
+.cardPinkStack {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.cardPink {
+  background: #e91e63;
+  border-radius: 32px;
+  border: 8px solid #ffca28;
+  padding: 18px 20px 20px;
+  color: white;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.18);
+}
+
+.cardPinkHeader {
+  font-size: 20px;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.cardPinkHeaderEmphasis {
+  font-size: 20px;
+  font-weight: 800;
+  text-align: center;
+  text-decoration: underline;
+  margin-bottom: 4px;
+}
+
+.cardPinkText {
+  margin-top: 8px;
+  font-size: 16px;
+}
+
+.cardPinkTextFaded {
+  opacity: 0.7;
+  margin-top: 4px;
+}
+
+.cardPinkSubText {
+  margin-top: 4px;
+  font-size: 15px;
+  opacity: 0.9;
+}
+
+/* Right column (login panel) */
+.formColumn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.formCard {
+  width: 100%;
+  max-width: 420px;
+  background: rgba(255, 255, 255, 0.96);
+  border-radius: 32px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.18);
+  padding: 26px 28px 24px;
+  backdrop-filter: blur(6px);
+}
+
+.formHeader {
+  margin-bottom: 12px;
+}
+
+.formTitle {
+  font-size: 26px;
+  font-weight: 800;
+}
+
+.formSubtitle {
+  font-size: 14px;
+  opacity: 0.78;
+  margin-top: 4px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 10px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fieldLabel {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.input {
+  border-radius: 999px;
+  border: 1px solid #ddd;
+  padding: 9px 14px;
+  font-size: 14px;
+  outline: none;
+  transition: border 0.15s, box-shadow 0.15s;
+}
+
+.input:focus {
+  border-color: #ff4081;
+  box-shadow: 0 0 0 2px rgba(255, 64, 129, 0.25);
+}
+
+.error {
+  background: #ffebee;
+  color: #c62828;
+  border-radius: 16px;
+  padding: 6px 10px;
+  font-size: 13px;
+}
+
+.submitBtn {
+  margin-top: 4px;
+  border: none;
+  border-radius: 999px;
+  padding: 10px 16px;
+  background: linear-gradient(135deg, #ff4081, #ff9100);
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.1s, opacity 0.2s;
+}
+
+.submitBtn:disabled {
+  opacity: 0.65;
+  cursor: default;
+}
+
+.submitBtn:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.16);
+}
+
+.formFooter {
+  margin-top: 10px;
+  font-size: 13px;
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+}
+
+.linkAccent {
+  color: #ff4081;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.linkAccent:hover {
+  text-decoration: underline;
+}
+
+.aiHintCard {
+  margin-top: 18px;
+  border-radius: 24px;
+  padding: 10px 14px;
+  background: #e3f2fd;
+  font-size: 13px;
+}
+
+.aiHintTitle {
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.aiHintText {
+  opacity: 0.8;
+}
+
+@media (max-width: 960px) {
+  .main {
+    grid-template-columns: 1fr;
+  }
+  .previewColumn {
+    display: none;
+  }
+}
