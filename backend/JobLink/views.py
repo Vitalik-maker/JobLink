@@ -20,7 +20,7 @@ User = get_user_model()
 class JobApplicationsViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     serializer_class = JobApplicationSerializer
-    queryset = JobApplication.objects.all()  # ← THIS LINE IS REQUIRED
+    queryset = JobApplication.objects.all()
     
     def get_queryset(self):
         return JobApplication.objects.filter(user=self.request.user)
@@ -38,7 +38,7 @@ class UserProfileViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [AllowAny]
     serializer_class = UserSerializer
     queryset = User.objects.all()
-    
+
     def get_queryset(self):
         return User.objects.filter(id = self.request.user.id)
 
