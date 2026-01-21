@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status, viewsets
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.authtoken.models import Token
-from django.contrib.auth import authenticate, get_user_model
+from django.contrib.auth import authenticate, get_user_model, update_session_auth_hash
 from .models import JobApplication, Skill
 from .serializers import (
     UserSerializer,
@@ -12,6 +12,8 @@ from .serializers import (
     JobApplicationSerializer,
     SkillSerializer,
     DashboardSerializer,
+    ProfileSerializer,
+    PasswordChangeSerializer,
 )
 import random
 
@@ -34,10 +36,9 @@ class SkillViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return Skill.objects.filter(user = self.request.user)
     
-class UserProfileViewSet(viewsets.ReadOnlyModelViewSet):
-    permission_classes = [AllowAny]
-    serializer_class = UserSerializer
-    queryset = User.objects.all()
+class UserProfileViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    serializer_class = ProfileSerializer
 
     def get_queryset(self):
         return User.objects.filter(id = self.request.user.id)
@@ -111,6 +112,40 @@ class LoginAPIView(APIView):
 
         token, _ = Token.objects.get_or_create(user=user)
         return Response({"token": token.key, "user": UserSerializer(user).data})
+    
+from django.utils import timezone
+
+class TokenRefreshView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            user = request.user
+
+            token = Token.objects.get(user = user)
+            token.created = timezone.now()
+            token.save()
+            return Response({'token': token.key})
+        except Token.DoesNotExist:
+            return Response({'error': 'No active token'}, status = 400)
+
+class PasswordChangeAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = PasswordChangeSerializer(data = request.data)
+        if serializer.is_valid():
+            passwords = serializer.validated_data
+            user = request.user
+            if user.check_password(passwords['old_password']):
+                user.set_password(passwords['new_password'])
+                user.save()
+                update_session_auth_hash(request, user)
+                return Response({'message': 'Password changed'})
+            return Response({'error': 'Old password wrong'}, status=400)
+        return Response(serializer.errors, status=400)
+
+
 
 
 class DashboardAPIView(APIView):
@@ -153,29 +188,7 @@ class DashboardAPIView(APIView):
         return Response(dash.data)
 
 
-#class JobApplicationsView(APIView):
-#    """
-#    CRUD for JobApplication list.
-#    Used to fill the left blue 'Job Applications' card.
-#    """
-#
-#    permission_classes = [IsAuthenticated]
-#
-#    def get(self, request):
-#        apps = JobApplication.objects.filter(user=request.user).order_by("-applied_date")
-#        ser = JobApplicationSerializer(apps, many=True)
-#        return Response(ser.data)
-#
-#    def post(self, request):
-#        data = request.data.copy()
-#        data["user"] = request.user.id
-#        ser = JobApplicationSerializer(data=data)
-#        if ser.is_valid():
-#            ser.save()
-#            return Response(ser.data, status=201)
-#        return Response(ser.errors, status=400)
-#
-#
+
 #class JobApplicationDetailView(APIView):
 #    """
 #    Update / delete a single job application.
@@ -206,30 +219,7 @@ class DashboardAPIView(APIView):
 #        app.delete()
 #        return Response(status=204)
 #
-#
-#class SkillsView(APIView):
-#    """
-#    CRUD for Skill items.
-#    Populates the 'List of skills' blue card.
-#    """
-#
-#    permission_classes = [IsAuthenticated]
-#
-#    def get(self, request):
-#        skills = Skill.objects.filter(user=request.user).order_by("id")
-#        ser = SkillSerializer(skills, many=True)
-#        return Response(ser.data)
-#
-#    def post(self, request):
-#        data = request.data.copy()
-#        data["user"] = request.user.id
-#        ser = SkillSerializer(data=data)
-#        if ser.is_valid():
-#            ser.save()
-#            return Response(ser.data, status=201)
-#        return Response(ser.errors, status=400)
-#
-#
+
 #class SkillDetailView(APIView):
 #    """
 #    Update / delete a single skill.
@@ -260,7 +250,7 @@ class DashboardAPIView(APIView):
 #        skill.delete()
 #        return Response(status=204)
 #
-#
+
 #class ProfileView(APIView):
 #    """
 #    Used on the profile-style dashboard (picture, name, age, skills).

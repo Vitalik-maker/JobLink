@@ -6,6 +6,7 @@ class User(AbstractUser):
     skills = models.JSONField(default=list)
     accomplishments = models.JSONField(default=list)
     age = models.IntegerField(null=True, blank=True)
+    bio = models.TextField(blank=True)
     
     # ← ADD THESE TWO LINES
     groups = models.ManyToManyField(

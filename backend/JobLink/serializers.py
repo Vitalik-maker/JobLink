@@ -50,7 +50,21 @@ class DashboardSerializer(serializers.Serializer):
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = '__all__'
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'age', 'bio', 'profile_picture', 'skills', 'accomplishments']
+        # ^^^ EXPLICIT fields ← NO '__all__'
         extra_kwargs = {
-            'password': {'write_only': True}
+            'password': {'write_only': True},
+            'profile_picture': {'required': False},
         }
+
+
+class PasswordChangeSerializer(serializers.Serializer):
+    old_password = serializers.CharField()
+    new_password = serializers.CharField()
+    confirm_password = serializers.CharField()
+    
+    def validate(self, data):
+        if data['new_password'] != data['confirm_password']:
+            raise serializers.ValidationError("Passwords don't match")
+        return data
+
