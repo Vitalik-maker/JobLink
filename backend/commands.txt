@@ -1,7 +1,7 @@
 cd backend
 
-python manage.py migrate
 python manage.py makemigrations
+python manage.py migrate
 python manage.py runserver
 
 python manage.py createsuperuser
@@ -10,3 +10,9 @@ npm i axios react-bootstrap bootstrap npm run dev
 
 username: Vitalii_admin
 password: Vitalik1987
+
+
+{
+  "username": "Vitalii_admin",
+  "password": "Vitalik1987"
+}

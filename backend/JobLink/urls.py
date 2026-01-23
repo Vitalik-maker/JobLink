@@ -21,7 +21,6 @@ urlpatterns = [
     path('dashboard/', DashboardAPIView.as_view()),
     path('auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('auth/password-change/', PasswordChangeAPIView.as_view(), name='password_change'),
-    path('profile/', UserProfileViewSet.as_view({'get': 'list', 'patch': 'partial_update'})),
     #path('ai/suggestions/', AISuggestionsAPIView.as_view()),
     
 ] + router.urls

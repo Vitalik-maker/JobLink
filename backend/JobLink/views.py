@@ -1,10 +1,11 @@
-# api/views.py
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, viewsets
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.authtoken.models import Token
+from rest_framework.decorators import action
 from django.contrib.auth import authenticate, get_user_model, update_session_auth_hash
+from django.utils import timezone
 from .models import JobApplication, Skill
 from .serializers import (
     UserSerializer,
@@ -26,6 +27,9 @@ class JobApplicationsViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         return JobApplication.objects.filter(user=self.request.user)
+    
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
     
 class SkillViewSet(viewsets.ModelViewSet):
@@ -34,14 +38,23 @@ class SkillViewSet(viewsets.ModelViewSet):
     queryset = Skill.objects.all()
 
     def get_queryset(self):
-        return Skill.objects.filter(user = self.request.user)
+        return Skill.objects.filter(user=self.request.user)
+    
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
     
 class UserProfileViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     serializer_class = ProfileSerializer
-
+    queryset = User.objects.all()
+    
     def get_queryset(self):
-        return User.objects.filter(id = self.request.user.id)
+        return User.objects.filter(id=self.request.user.id)
+    
+    def get_object(self):
+        return self.request.user
+
+# ... rest of your views remain the same ...
 
 #class AccomplishmentsViewSet(viewsets.ModelViewSet):
 #    permission_classes = [IsAuthenticated]
@@ -97,22 +110,23 @@ class LoginAPIView(APIView):
         JSON: { "username": "...", "password": "..." }
         """
         serializer = LoginSerializer(data=request.data)
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=400)
+        if serializer.is_valid():
 
-        user = authenticate(
-            username=serializer.validated_data["username"],
-            password=serializer.validated_data["password"],
-        )
-        if not user:
-            return Response(
-                {"detail": "Invalid credentials."},
-                status=status.HTTP_401_UNAUTHORIZED,
+
+            user = authenticate(
+                username=serializer.validated_data["username"],
+                password=serializer.validated_data["password"],
             )
+            if not user:
+                return Response(
+                    {"detail": "Invalid credentials."},
+                    status=status.HTTP_401_UNAUTHORIZED,
+                )
 
-        token, _ = Token.objects.get_or_create(user=user)
-        return Response({"token": token.key, "user": UserSerializer(user).data})
-    
+            token, _ = Token.objects.get_or_create(user=user)
+            return Response({"token": token.key, "user": UserSerializer(user).data})
+
+        return Response(serializer.errors, status=400)
 from django.utils import timezone
 
 class TokenRefreshView(APIView):
